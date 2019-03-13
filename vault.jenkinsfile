@@ -1,0 +1,24 @@
+pipeline {
+  agent none
+  stages {  
+    stage('Integration Tests') {
+      steps {
+        script {
+          def secrets = [[
+            $class: 'VaultSecret', path: 'secret/hello', secretValues: [
+              [$class: 'VaultSecretValue', envVar: 'firstSecret', vaultKey: 'devops']]
+          ]]
+          def configuration = [$class: 'VaultConfiguration',
+                                vaultUrl: 'http://144.36.171.184:8200',
+                                vaultCredentialId: 'VAULT_ROOT_TOKEN']
+          wrap([$class: 'VaultBuildWrapper', configuration: configuration, vaultSecrets: secrets]) {
+            sh """
+            echo $firstSecret
+            """
+            
+          }
+        }
+      }
+    }
+  }
+}
